@@ -1,2 +1,1 @@
-pub mod kind;
-mod resource;
+pub mod resource;

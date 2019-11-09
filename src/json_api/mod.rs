@@ -1,23 +1,16 @@
-use super::data::kind::DataType;
+mod builder;
+use builder::JsonApiBuilder;
 
+#[derive(Debug, PartialEq)]
 pub struct JsonApi {
-    data: Option<DataType>,
-    errors: Option<String>,
-    meta: Option<String>,
-    jsonapi: Option<String>,
-    links: Option<String>,
-    included: Option<String>
+//    data: Option<DataType>,
+    errors: Option<bool>,
+    meta: Option<bool>,
+    jsonapi: Option<bool>,
+    links: Option<bool>,
+    included: Option<bool>
 }
 
-impl JsonApi {
-    pub fn new() -> Self {
-        JsonApi {
-            data: None,
-            errors: None,
-            meta: None,
-            jsonapi: None,
-            links: None,
-            included: None
-        }
-    }
+pub fn get_instance() -> JsonApiBuilder {
+    JsonApiBuilder::new()
 }
