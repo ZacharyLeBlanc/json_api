@@ -1,14 +1,6 @@
-[package]
-name = "json_api"
-version = "0.1.0"
-authors = ["Zach LeBlanc <zachleb112@gmail.com>"]
-edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[lib]
-proc-macro = true
-
-[dependencies]
-syn = "0.14.4"
-quote = "0.6.3"
+[workspace]
+members = [
+    "json_api",
+    "json_api_derive",
+    "json_api_test"
+]
