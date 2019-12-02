@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 json_api = { path = "../json_api" }
 json_api_derive = { path = "../json_api_derive" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

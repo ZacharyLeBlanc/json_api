@@ -1,20 +1,18 @@
-use super::Resource;
+use super::ResourceTrait;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct IdentifierObject {
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ResourceIdentifierObject {
     r#type: String,
-    id: String
+    id: String,
 }
 
-impl IdentifierObject {
+impl ResourceIdentifierObject {
     pub fn new(r#type: String, id: String) -> Self {
-        IdentifierObject {
-            r#type,
-            id
-        }
+        ResourceIdentifierObject { r#type, id }
     }
 
-    pub fn from(resource: impl Resource) -> IdentifierObject {
+    pub fn from(resource: impl ResourceTrait) -> ResourceIdentifierObject {
         resource.to_identifier()
     }
 }
