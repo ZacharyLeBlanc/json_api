@@ -1,5 +1,5 @@
 [package]
-name = "json_api"
+name = "json_api_rust"
 version = "0.1.0"
 authors = ["Zach LeBlanc <zachleb112@gmail.com>"]
 edition = "2018"
