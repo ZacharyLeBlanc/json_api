@@ -1,18 +1,20 @@
+use crate::link::Links;
+use crate::relationship::Relationship;
 use crate::ResourceTrait;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ResourceObject {
     r#type: String,
     id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     attributes: Option<HashMap<String, Value>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    relationships: Option<String>,
+    relationships: Option<HashMap<String, Relationship>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    links: Option<String>,
+    links: Option<Links>,
     #[serde(skip_serializing_if = "Option::is_none")]
     meta: Option<String>,
 }
@@ -27,6 +29,10 @@ impl ResourceObject {
             links: None,
             meta: None,
         }
+    }
+
+    pub fn relationships(&mut self, relationships: Option<HashMap<String, Relationship>>) {
+        self.relationships = relationships;
     }
 
     pub fn from(resource: impl ResourceTrait) -> ResourceObject {

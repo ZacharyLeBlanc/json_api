@@ -8,24 +8,28 @@ use syn::{
     Attribute,
     Data::Struct,
     DeriveInput, Error, Field, Fields, Ident,
-    Meta::{List, Path},
+    Lit::Str,
+    Meta::{List, NameValue, Path},
     NestedMeta::Meta,
-    Type,
 };
 
 pub struct ResourceContext {
+    url: Option<String>,
     errors: Vec<Error>,
-    fields: Vec<(Ident, Type)>,
+    fields: Vec<Ident>,
     id_field: Option<Ident>,
+    relationship_fields: Vec<Ident>,
     resource_name: Option<Ident>,
 }
 
 impl ResourceContext {
     pub fn new() -> Self {
         ResourceContext {
+            url: None,
             errors: vec![],
             fields: vec![],
             id_field: None,
+            relationship_fields: vec![],
             resource_name: None,
         }
     }
@@ -55,22 +59,32 @@ impl ResourceContext {
                 let id_field = self.id_field.as_ref().unwrap();
                 let fields = &self.fields;
                 let mut definitions = vec![];
-                for (ident, _ty) in fields {
+                for ident in fields {
                     let name = ident.to_string();
                     definitions.push(quote!(map.insert(#name.to_string(), serde_json::json!(self.#ident.clone()));));
                 }
 
-                let mut concatenated = format!("{}_ResourceIdentifierObject", name);
-                let resource_identifier_object = Ident::new(&concatenated, name.span());
-                concatenated = format!("{}_ResourceObject", name);
-                let resource_object = Ident::new(&concatenated, name.span());
-                concatenated = format!("{}_ResourceTrait", name);
-                let resource_trait = Ident::new(&concatenated, name.span());
+                let relationships: Vec<TokenStream> = self.relationship_fields.iter().map(|ident| {
+                    let resource = name.to_string().to_lowercase();
+                    let name = ident.to_string();
+                    let x = quote!(Some(json_api::Data::Singular(json_api::ResourceType::Identifier(self.#ident.clone().to_identifier()))));
+                    quote!(relationships.insert(#name.to_string(), json_api::Relationship::new(json_api::Links::new(vec![json_api::Link::Related(&(format!("/{}/{}/{}", #resource, self.get_id(), #name)))]), #x));)
+               }).collect();
+
+                let add_relationships = if self.relationship_fields.is_empty() {
+                    quote!(object.relationships(None);)
+                } else {
+                    quote! {
+                     let mut relationships = std::collections::HashMap::new();
+                      #(#relationships)*
+                      object.relationships(Some(relationships));
+                    }
+                };
 
                 return quote! {
-                    use json_api::{ResourceIdentifierObject as #resource_identifier_object, ResourceObject as #resource_object, ResourceTrait as #resource_trait};
+                    use json_api::*;
 
-                    impl #resource_trait for #name {
+                    impl ResourceTrait for #name {
                         fn get_attributes(&self) -> Option<std::collections::HashMap<String, serde_json::Value>> {
                             let mut map = std::collections::HashMap::new();
                             #(#definitions)*
@@ -81,13 +95,14 @@ impl ResourceContext {
                             self.#id_field.to_string()
                         }
 
-                        fn to_identifier(&self) -> #resource_identifier_object {
-                            <#resource_identifier_object>::new(stringify!(#name).to_lowercase(), self.get_id())
+                        fn to_identifier(&self) -> ResourceIdentifierObject {
+                            ResourceIdentifierObject::new(stringify!(#name).to_lowercase(), self.get_id())
                         }
 
-                        fn to_resource_object(&self) -> #resource_object {
-                            let mut object = <#resource_object>::new(stringify!(#name).to_lowercase(), self.get_id());
+                        fn to_resource_object(&self) -> ResourceObject {
+                            let mut object = ResourceObject::new(stringify!(#name).to_lowercase(), self.get_id());
                             object.add_attributes(self.get_attributes());
+                            #add_relationships
                             object
                         }
                     }
@@ -105,6 +120,7 @@ fn to_compile_errors(errors: Vec<syn::Error>) -> proc_macro2::TokenStream {
 
 fn parse(ast: &DeriveInput, context: &mut ResourceContext) {
     parse_name(ast, context);
+    parse_attrs(ast, context);
     parse_data(ast, context);
 }
 
@@ -145,6 +161,13 @@ fn parse_field_attributes(field: &Field, attributes: &[Attribute], context: &mut
                                 }
                             }
                         }
+                        Meta(Path(word)) if word.clone() == TO_ONE => {
+                            if let Some(ident) = &field.ident {
+                                context
+                                    .relationship_fields
+                                    .push(Ident::new(ident.to_string().as_str(), ident.span()))
+                            }
+                        }
                         _ => {}
                     }
                 }
@@ -158,8 +181,10 @@ fn parse_fields(fields: &Fields, context: &mut ResourceContext) {
         for field in named_fields.named.iter() {
             parse_field_attributes(field, &field.attrs, context);
             if let Some(ident) = &field.ident {
-                if ident != context.id_field.as_ref().unwrap() {
-                    context.fields.push((ident.clone(), field.ty.clone()));
+                if ident != context.id_field.as_ref().unwrap()
+                    && !context.relationship_fields.contains(ident)
+                {
+                    context.fields.push(ident.clone());
                 }
             };
         }
@@ -171,4 +196,24 @@ fn parse_name(ast: &DeriveInput, context: &mut ResourceContext) {
         &ast.ident.to_string().as_str(),
         ast.ident.span(),
     ));
+}
+
+fn parse_attrs(ast: &DeriveInput, context: &mut ResourceContext) {
+    ast.attrs.iter().for_each(|attr| {
+        if let Ok(metadata) = attr.parse_meta() {
+            if let List(meta_list) = metadata {
+                for nested_metadata in meta_list.nested.iter() {
+                    if let Meta(meta) = nested_metadata {
+                        if let NameValue(name_value) = meta {
+                            if name_value.path == URL {
+                                if let Str(string) = &name_value.lit {
+                                    context.url = Some(string.value());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
 }
