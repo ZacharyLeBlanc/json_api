@@ -2,7 +2,7 @@ use actix_web::dev::HttpResponseBuilder;
 use actix_web::http::StatusCode;
 use actix_web::{Error, HttpRequest, HttpResponse, Responder};
 use futures::future::{ready, Ready};
-use json_api::{JsonApi, JsonApiError, Link};
+use j_api::{JsonApi, JsonApiError, Link};
 
 #[derive(Debug, Clone)]
 pub enum JsonApiResponse {

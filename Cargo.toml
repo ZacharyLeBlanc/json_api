@@ -1,8 +1,8 @@
 [workspace]
 members = [
-    "json_api",
-    "json_api_derive",
-    "json_api_test",
-    "json_api_actix",
+    "core",
+    "derive",
+    "test",
+    "actix",
     "examples/actix_web"
 ]

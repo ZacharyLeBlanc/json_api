@@ -1,14 +1,18 @@
 [package]
-name = "json_api_actix"
+name = "j-api-derive"
 version = "0.1.0"
 authors = ["Zach LeBlanc <zachleb112@gmail.com>"]
 edition = "2018"
+description = "Code generation for json_api"
+license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+proc-macro = true
+
 [dependencies]
-json_api = { path = "../json_api" }
-actix-web = "2.0"
-futures = "0.3.4"
+syn = "1.0"
+quote = "1.0"
+proc-macro2 = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"

@@ -1,16 +1,16 @@
 [package]
-name = "json_api_rust"
+name = "j-api"
 version = "0.1.0"
 authors = ["Zach LeBlanc <zachleb112@gmail.com>"]
 edition = "2018"
-description = "json_api"
+description = "Json api implementation"
 license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-json_api_derive = { version = "0.1.0", path = "../json_api_derive", optional = true }
+j-api-derive = { version = "0.1.0", path = "../derive", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 [features]
-derive = ["json_api_derive"]
+derive = ["j-api-derive"]

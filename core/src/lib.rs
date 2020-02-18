@@ -10,5 +10,7 @@ pub use resource::{ResourceIdentifierObject, ResourceObject, ResourceTrait, Reso
 pub mod relationship;
 pub use relationship::Relationship;
 
-#[cfg(feature = "json_api_derive")]
-pub use json_api_derive::Resource;
+#[cfg(feature = "derive")]
+pub use j_api_derive::Resource;
+#[cfg(feature = "actix")]
+pub use j_api_actix::JsonApiResponse;

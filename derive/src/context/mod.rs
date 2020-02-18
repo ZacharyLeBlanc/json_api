@@ -67,8 +67,8 @@ impl ResourceContext {
                 let relationships: Vec<TokenStream> = self.relationship_fields.iter().map(|ident| {
                     let resource = name.to_string().to_lowercase();
                     let name = ident.to_string();
-                    let x = quote!(Some(json_api::Data::Singular(json_api::ResourceType::Identifier(self.#ident.clone().to_identifier()))));
-                    quote!(relationships.insert(#name.to_string(), json_api::Relationship::new(json_api::Links::new(vec![json_api::Link::Related(&(format!("/{}/{}/{}", #resource, self.get_id(), #name)))]), #x));)
+                    let x = quote!(Some(Data::Singular(ResourceType::Identifier(self.#ident.clone().to_identifier()))));
+                    quote!(relationships.insert(#name.to_string(), Relationship::new(Links::new(vec![Link::Related(&(format!("/{}/{}/{}", #resource, self.get_id(), #name)))]), #x));)
                }).collect();
 
                 let add_relationships = if self.relationship_fields.is_empty() {
@@ -82,7 +82,7 @@ impl ResourceContext {
                 };
 
                 return quote! {
-                    use json_api::*;
+                    use j_api::*;
 
                     impl ResourceTrait for #name {
                         fn get_attributes(&self) -> Option<std::collections::HashMap<String, serde_json::Value>> {

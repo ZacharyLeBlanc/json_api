@@ -1,6 +1,6 @@
 use actix_web::{get, http::StatusCode, web, App, HttpServer, Responder};
-use json_api::{JsonApi, JsonApiError, Resource, ResourceTrait};
-use json_api_actix::JsonApiResponse;
+use j_api::{JsonApi, JsonApiError, Resource, ResourceTrait};
+use j_api_actix::JsonApiResponse;
 use std::sync::Mutex;
 
 #[derive(Debug, Clone, Resource)]
